@@ -145,7 +145,7 @@ class AegisTraceEngine:
 
         # --- DYNAMIC METADATA GENERATION BASED ON THREAT PROFILE ---
         is_spoofed_or_phish = (len(injected_hops) > 0 or lookalike_check["is_lookalike"] or content_report["content_risk_score"] > 0)
-        
+
         if is_spoofed_or_phish:
             asn_info = "AS14061 (DigitalOcean Cloud Hosting - High Risk Hub)"
             geo_info = "Anonymous / Frankfurt Datacenter"
@@ -275,7 +275,7 @@ if demo_mode == "Select Test Case":
         "3. Content Phishing Only (Clean Headers)",
         "4. Combined Spoofed & Phishing Mail (Critical)"
     ])
-    
+
     if "1." in selected_case:
         raw_eml = CASE_1_LEGITIMATE
     elif "2." in selected_case:
@@ -338,7 +338,7 @@ if raw_eml:
 
     with tab2:
         st.subheader("🔍 Deep Reverse Boundary & Infrastructure Forensics")
-        
+
         # Row 1: Hop-by-Hop Trace Analysis
         col_a, col_b = st.columns(2)
         with col_a:
@@ -348,7 +348,7 @@ if raw_eml:
                 st.dataframe(df_v, use_container_width=True)
             else:
                 st.info("No verified hops detected.")
-                
+
         with col_b:
             st.markdown("#### 🔴 Stripped Pre-Injected Forgeries (Anomalies)")
             df_i = pd.DataFrame(report.get("untrusted_injected_hops", []))
@@ -357,7 +357,7 @@ if raw_eml:
                 st.warning("⚠️ **Injection Detected:** Attackers manually pasted fake 'Received' lines to mimic internal server paths.")
             else:
                 st.success("Zero forged header injections detected.")
-        
+
         with st.expander("🔬 How AegisTrace Detected These Injected Forgeries"):
             if report.get("untrusted_injected_hops"):
                 st.markdown("""
@@ -373,7 +373,7 @@ if raw_eml:
         # Row 2: True Origin Internet Footprint & Anonymization Check (Dynamic)
         st.markdown("#### 🌐 True Origin Internet Footprint & Masking Analysis")
         inf_col1, inf_col2 = st.columns(2)
-        
+
         with inf_col1:
             st.markdown("**Masking Technique (VPN / Tor / Proxy)**")
             if "DETECTED" in report["masking_status"]:
@@ -381,7 +381,7 @@ if raw_eml:
             else:
                 st.success(f"✅ **Network Status:** {report['masking_status']}")
             st.caption("🛠️ *Tools Used: Real-time Tor Exit Node Feeds & ASN Hosting Database*")
-            
+
         with inf_col2:
             st.markdown("**Internet Footprint & Exposure Mapping**")
             if "⚠️" in report["footprint_status"]:
@@ -395,19 +395,19 @@ if raw_eml:
         # Row 3: Infrastructure Metadata & FCrDNS
         st.markdown("#### 📋 Network Infrastructure Metadata")
         meta_col1, meta_col2, meta_col3 = st.columns(3)
-        
+
         with meta_col1:
             st.markdown("**Forward-Confirmed DNS (FCrDNS)**")
             fcrdns_res = report.get("fcrdns", {})
             st.write(f"- **Hostname:** `{fcrdns_res.get('hostname', 'N/A')}`")
             st.write(f"- **PTR Status:** `{fcrdns_res.get('status', 'UNKNOWN')}`")
             st.caption("🛠️ *Tool: Python `socket` module*")
-            
+
         with meta_col2:
             st.markdown("**Domain Age & WHOIS**")
             st.write(f"- **Age Status:** `{report['domain_age']}`")
             st.caption("🛠️ *Tool: Python `whois` / RDAP Protocol*")
-            
+
         with meta_col3:
             st.markdown("**Typosquatting Check**")
             lookalike = report["lookalike_analysis"]
@@ -420,7 +420,7 @@ if raw_eml:
     with tab3:
         st.subheader("Content, Intent & Hyperlink Forensic Scan")
         creport = report["content_report"]
-        
+
         c_col1, c_col2 = st.columns(2)
         with c_col1:
             st.markdown("#### Psychological Urgency & Financial Triggers")
