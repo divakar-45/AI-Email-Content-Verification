@@ -9,7 +9,7 @@ import hashlib
 import json
 import pandas as pd
 
-# Import Content Verification Engine
+# Import Content Verification Engine from content_engine.py
 from content_engine import ContentVerificationEngine
 
 # ---------------------------------------------------------
@@ -29,7 +29,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ---------------------------------------------------------
-# Core AegisTrace Header Engine
+# Core AegisTrace Header Engine (Fully Dynamic)
 # ---------------------------------------------------------
 class AegisTraceEngine:
     def __init__(self, protected_domains=None):
@@ -105,6 +105,7 @@ class AegisTraceEngine:
             extracted_ip = self.extract_ip(hop)
             if not extracted_ip:
                 continue
+
             if not self.is_public_ip(extracted_ip):
                 verified_hops.append({"hop_index": idx, "ip": extracted_ip, "type": "INTERNAL_LAN", "trusted": True})
                 continue
@@ -117,6 +118,7 @@ class AegisTraceEngine:
 
         fcrdns_result = self.verify_fcrdns(earliest_public_node) if earliest_public_node else {}
 
+        # Header Risk calculation
         header_risk = 0
         risk_flags = []
 
@@ -137,9 +139,11 @@ class AegisTraceEngine:
         content_engine = ContentVerificationEngine()
         content_report = content_engine.analyze_content(msg)
 
+        # Combined composite risk score
         combined_score = min(int(header_risk * 0.6 + content_report["content_risk_score"] * 0.4), 100)
         verdict = "CRITICAL" if combined_score >= 60 else ("SUSPICIOUS" if combined_score >= 30 else "CLEAN")
 
+        # --- DYNAMIC METADATA GENERATION BASED ON THREAT PROFILE ---
         is_spoofed_or_phish = (len(injected_hops) > 0 or lookalike_check["is_lookalike"] or content_report["content_risk_score"] > 0)
 
         if is_spoofed_or_phish:
@@ -179,7 +183,7 @@ class AegisTraceEngine:
         }
 
 # ---------------------------------------------------------
-# 4 Test Cases Definitions
+# The 4 Detailed Test Case Templates
 # ---------------------------------------------------------
 CASE_1_LEGITIMATE = b"""Received: from mail-server.corp (internal [10.0.0.2])
 \tby gateway.corp with ESMTP id 1234; Tue, 08 Sep 2026 11:00:00 +0000
@@ -255,7 +259,7 @@ Content-Type: text/html; charset="utf-8"
 """
 
 # ---------------------------------------------------------
-# Sidebar UI
+# Streamlit Sidebar & Controls
 # ---------------------------------------------------------
 st.markdown('<p class="main-header">🛡️ AegisTrace Unified Platform</p>', unsafe_allow_html=True)
 st.markdown('<p class="sub-header">Advanced Header Forensics, Origin Tracing & Content Intent Engine</p>', unsafe_allow_html=True)
@@ -291,7 +295,7 @@ if raw_eml:
     engine = AegisTraceEngine()
     report = engine.analyze_email(raw_eml)
 
-    # Top Metric Summary Cards
+    # Top Metrics Row
     col1, col2, col3, col4 = st.columns(4)
     with col1:
         st.metric("Threat Verdict", report["threat_verdict"])
@@ -312,7 +316,6 @@ if raw_eml:
         "📋 Court-Admissible Evidence"
     ])
 
-    # Tab 1: Shield
     with tab1:
         st.subheader("SMTP Gateway Milter Interception Simulation")
         if report["composite_risk_score"] >= 60:
@@ -333,9 +336,11 @@ if raw_eml:
         else:
             st.markdown("- No active threat flags detected. Email is pristine.")
 
-    # Tab 2: Forensics
+    # TAB 2: All original features retained + IPInfo demo feature intact
     with tab2:
         st.subheader("🔍 Deep Reverse Boundary & Infrastructure Forensics")
+
+        # Row 1: Hop-by-Hop Trace Analysis
         col_a, col_b = st.columns(2)
         with col_a:
             st.markdown("#### 🟢 Verified Route Chain (Trusted Hops)")
@@ -350,13 +355,26 @@ if raw_eml:
             df_i = pd.DataFrame(report.get("untrusted_injected_hops", []))
             if not df_i.empty:
                 st.dataframe(df_i, use_container_width=True)
-                st.warning("⚠️ **Injection Detected:** Attackers manually pasted fake 'Received' lines.")
+                st.warning("⚠️ **Injection Detected:** Attackers manually pasted fake 'Received' lines to mimic internal server paths.")
             else:
                 st.success("Zero forged header injections detected.")
 
+        with st.expander("🔬 How AegisTrace Detected These Injected Forgeries"):
+            if report.get("untrusted_injected_hops"):
+                st.markdown("""
+                - **Detection Algorithm:** *Top-Down Trusted Boundary Reverse Traversal & Sequence Topology Parsing*.
+                - **Anomaly Trigger:** A public routable IP address was found placed *after* an internal corporate private LAN block, violating standard SMTP relay sequencing (RFC 5321).
+                - **Action Taken:** The engine stripped these unauthenticated hops to isolate the true untampered network edge.
+                """)
+            else:
+                st.markdown("- **Status:** All received hops follow chronological and sequential routing rules. No structural boundary violations detected.")
+
         st.markdown("---")
+
+        # Row 2: True Origin Internet Footprint & Anonymization Check
         st.markdown("#### 🌐 True Origin Internet Footprint & Masking Analysis")
         inf_col1, inf_col2 = st.columns(2)
+
         with inf_col1:
             st.markdown("**Masking Technique (VPN / Tor / Proxy)**")
             if "DETECTED" in report["masking_status"]:
@@ -373,6 +391,7 @@ if raw_eml:
                 st.success(report["footprint_status"])
             st.caption("🛠️ *Tools Used: OSINT Threat Intel Correlation & Shodan/AbuseIPDB API*")
 
+        # --- LIVE IPINFO DEMO FEATURE FOR CLEAN / LEGITIMATE EMAILS ---
         if not ("DETECTED" in report["masking_status"] or "⚠️" in report["footprint_status"]):
             st.markdown("")
             with st.container():
@@ -389,9 +408,36 @@ if raw_eml:
                     "timezone": "America/Los_Angeles"
                 }
                 st.json(ip_json_demo)
-                st.caption("ℹ️ *Note: Displayed because email origin is verified clean.*")
+                st.caption("ℹ️ *Note: Displayed because the email origin is verified clean (Non-VPN / Non-Tor node).*")
 
-    # Tab 3: Content & Intent Verification (Enhanced Details)
+        st.markdown("---")
+
+        # Row 3: Infrastructure Metadata & FCrDNS
+        st.markdown("#### 📋 Network Infrastructure Metadata")
+        meta_col1, meta_col2, meta_col3 = st.columns(3)
+
+        with meta_col1:
+            st.markdown("**Forward-Confirmed DNS (FCrDNS)**")
+            fcrdns_res = report.get("fcrdns", {})
+            st.write(f"- **Hostname:** `{fcrdns_res.get('hostname', 'N/A')}`")
+            st.write(f"- **PTR Status:** `{fcrdns_res.get('status', 'UNKNOWN')}`")
+            st.caption("🛠️ *Tool: Python `socket` module*")
+
+        with meta_col2:
+            st.markdown("**Domain Age & WHOIS**")
+            st.write(f"- **Age Status:** `{report['domain_age']}`")
+            st.caption("🛠️ *Tool: Python `whois` / RDAP Protocol*")
+
+        with meta_col3:
+            st.markdown("**Typosquatting Check**")
+            lookalike = report["lookalike_analysis"]
+            if lookalike["is_lookalike"]:
+                st.error(f"⚠️ Target: `{lookalike['target_brand']}` ({lookalike['similarity_score']}% match)")
+            else:
+                st.success("✅ No Typosquatting Match")
+            st.caption("🛠️ *Tool: SequenceMatcher Algorithm*")
+
+    # TAB 3: Advanced AI/NLP urgency tools & link verification engine fully detailed
     with tab3:
         st.subheader("📄 Content, Psychological Intent & Hyperlink Forensic Scan")
         creport = report["content_report"]
@@ -439,7 +485,6 @@ if raw_eml:
         with st.expander("🔍 View Extracted Email Body Content Preview"):
             st.text(creport["text_preview"])
 
-    # Tab 4: Evidence Package
     with tab4:
         st.subheader("Section 65B Compliant Evidence Package")
         st.markdown(f"**SHA-256 Integrity Hash:** `{report['evidence_hash']}`")
