@@ -445,7 +445,7 @@ if raw_eml:
         st.markdown("#### 🧠 Psychological Manipulation & Urgency Analysis Toolset")
         st.markdown("""
         * **Tool & Library Used:** Python custom NLP Lexicon Scanner + Regular Expressions (`re` module).
-        * **How Urgency is Verified:** The platform scans the decoded plain and HTML text against a curated psychological trigger dictionary (`urgent`, `suspended`, `within 24 hours`, `immediate action`). If high-anxiety phrases are paired with security penalties, the manipulation score spikes.
+        
         """)
 
         c_col1, c_col2 = st.columns(2)
@@ -469,10 +469,7 @@ if raw_eml:
         st.markdown("#### 🔗 Hyperlink Safety & Deception Verification Engine")
         st.markdown("""
         * **Tool & Library Used:** `BeautifulSoup` (HTML Parser) + `urllib.parse` + Netloc IP Regex matching.
-        * **How Links are Verified as Suspicious:** 
-          1. **Raw IP Inspection:** Checks if the hostname (`netloc`) inside the URL is a direct raw IP address (e.g., `http://185.220.101.5/login.php`) instead of a verified domain name.
-          2. **Extension Check:** Flags dangerous or unmanaged extensions (`.php`, `.xyz`, `.top`).
-          3. **Mismatch Detection:** Compares visible anchor text against actual destination domains to find deceptive redirects.
+        
         """)
 
         if creport["suspicious_links"]:
