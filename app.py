@@ -336,6 +336,10 @@ if raw_eml:
             else:
                 st.success("Zero forged header injections detected.")
 
+        st.markdown("---")
+        st.markdown("#### 🌐 FCrDNS (Forward-Confirmed Reverse DNS) Validation")
+        st.json(report["fcrdns"])
+
     with tab3:
         st.subheader("Content, Intent & Hyperlink Forensic Scan")
         creport = report["content_report"]
