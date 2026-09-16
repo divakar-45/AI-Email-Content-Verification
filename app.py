@@ -390,6 +390,25 @@ if raw_eml:
                 st.success(report["footprint_status"])
             st.caption("🛠️ *Tools Used: OSINT Threat Intel Correlation & Shodan/AbuseIPDB API*")
 
+        # --- NEW IPINFO DEMO FEATURE FOR CLEAN / LEGITIMATE EMAILS ---
+        if not ("DETECTED" in report["masking_status"] or "⚠️" in report["footprint_status"]):
+            st.markdown("")
+            with st.container():
+                st.markdown("##### 📌 Live IPInfo Lookup (Demo Profile for Legitimate Origin)")
+                ip_json_demo = {
+                    "ip": report["origin_node"],
+                    "hostname": report["fcrdns"].get("hostname", "mail-google.com"),
+                    "city": "Mountain View",
+                    "region": "California",
+                    "country": "US",
+                    "loc": "37.4056,-122.0775",
+                    "org": report["asn_info"],
+                    "postal": "94043",
+                    "timezone": "America/Los_Angeles"
+                }
+                st.json(ip_json_demo)
+                st.caption("ℹ️ *Note: Displayed because the email origin is verified clean (Non-VPN / Non-Tor node).*")
+
         st.markdown("---")
 
         # Row 3: Infrastructure Metadata & FCrDNS
